@@ -76,9 +76,7 @@ void YMF825Driver::setToneParameter(ToneParameter *param) {
   uint8_t buffer[YMF825_TONE_SIZE + 5];
 
   buffer[0] = 0x81;
-
-  for (uint8_t i = 0; i < YMF825_TONE_SIZE; i++) buffer[i + 1] = (*param).memory[i];
-
+  memcpy(buffer + 1, param->memory, YMF825_TONE_SIZE);
   buffer[YMF825_TONE_SIZE + 1] = 0x80;
   buffer[YMF825_TONE_SIZE + 2] = 0x03;
   buffer[YMF825_TONE_SIZE + 3] = 0x81;
