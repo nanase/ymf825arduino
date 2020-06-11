@@ -1,6 +1,6 @@
 #include "ymf825/driver.h"
 
-#define opAddress(operatorNumber, offset) (operatorNumber * 7 + 2 + offset)
+#define opAddress(operatorNumber, offset) (operatorNumber * YMF825_OPERATOR_SIZE + 2 + offset)
 
 ToneParameter::ToneParameter() {}
 
@@ -9,7 +9,7 @@ ToneParameter::ToneParameter(const uint8_t *source) {
 }
 
 void ToneParameter::fillMemory(const uint8_t *source) {
-  memcpy(memory, source, 30);
+  memcpy(memory, source, YMF825_TONE_SIZE);
 }
 
 uint8_t ToneParameter::getBaseOctave() {

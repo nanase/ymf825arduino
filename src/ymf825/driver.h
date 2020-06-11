@@ -3,7 +3,14 @@
 #include "Arduino.h"
 #include "ymf825.h"
 
+#define YMF825_VOICE_COUNT 16
 #define YMF825_TONE_SIZE 30
+#define YMF825_TONE_COUNT 16
+#define YMF825_OPERATOR_SIZE 7
+#define YMF825_OPERATOR_COUNT 4
+
+#define YMF825_EQUALIZER_BAND_COUNT 3
+#define YMF825_EQUALIZER_BAND_SIZE 5
 
 enum YMF825_VOLTAGE {
   YMF825_VOLTAGE_5V  = 0,
@@ -77,7 +84,7 @@ class ToneParameter {
 
 class ToneParameters {
  public:
-  ToneParameter parameters[16] = { ToneParameter() };
+  ToneParameter parameters[YMF825_TONE_COUNT] = { ToneParameter() };
 
   void setParameter(uint8_t toneNumber, ToneParameter *parameter);
   void setParameter(uint8_t toneNumber, const uint8_t *buffer);
@@ -87,7 +94,7 @@ class ToneParameters {
 class YMF825Driver {
  private:
   YMF825Device *device;
-  uint8_t toneFlag[16] = { 0 };
+  uint8_t toneFlag[YMF825_VOICE_COUNT] = { 0 };
 
  public:
   YMF825Driver(YMF825Device *device);

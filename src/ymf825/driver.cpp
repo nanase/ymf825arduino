@@ -57,19 +57,19 @@ uint8_t YMF825Driver::getHardwareId(uint8_t targetChip) {
 }
 
 void YMF825Driver::setToneParameters(ToneParameters *params, uint8_t *buffer) {
-  buffer[0] = 0x80 + 16;
+  buffer[0] = 0x80 + YMF825_TONE_COUNT;
 
-  for (uint8_t i = 0; i < 16; i++) {
+  for (uint8_t i = 0; i < YMF825_TONE_COUNT; i++) {
     ToneParameter *toneParameter = params->getParameter(i);
     memcpy(buffer + YMF825_TONE_SIZE * i + 1, toneParameter->memory, YMF825_TONE_SIZE);
   }
 
-  buffer[YMF825_TONE_SIZE * 16 + 1] = 0x80;
-  buffer[YMF825_TONE_SIZE * 16 + 2] = 0x03;
-  buffer[YMF825_TONE_SIZE * 16 + 3] = 0x81;
-  buffer[YMF825_TONE_SIZE * 16 + 4] = 0x80;
+  buffer[YMF825_TONE_SIZE * YMF825_TONE_COUNT + 1] = 0x80;
+  buffer[YMF825_TONE_SIZE * YMF825_TONE_COUNT + 2] = 0x03;
+  buffer[YMF825_TONE_SIZE * YMF825_TONE_COUNT + 3] = 0x81;
+  buffer[YMF825_TONE_SIZE * YMF825_TONE_COUNT + 4] = 0x80;
 
-  setToneParameter(buffer, YMF825_TONE_SIZE * 16 + 5);
+  setToneParameter(buffer, YMF825_TONE_SIZE * YMF825_TONE_COUNT + 5);
 }
 
 void YMF825Driver::setToneParameter(ToneParameter *param) {
@@ -216,29 +216,30 @@ uint8_t YMF825Driver::getPowerRailSelection(uint8_t targetChip) {
 }
 
 void YMF825Driver::setEqualizer(uint8_t band, const double *coefficients) {
-  uint8_t data[15];
+  uint8_t data[YMF825_EQUALIZER_BAND_SIZE * YMF825_EQUALIZER_BAND_COUNT];
 
-  for (uint8_t i = 0; i < 5; i++) {
+  for (uint8_t i = 0; i < YMF825_EQUALIZER_BAND_SIZE; i++) {
     uint32_t registerFormat = YMF825Driver::serializeCoefficient(coefficients[i]);
 
-    data[i * 3 + 0] = (uint8_t)(registerFormat >> 16);
-    data[i * 3 + 1] = (uint8_t)((registerFormat >> 8) & 0xff);
-    data[i * 3 + 2] = (uint8_t)(registerFormat & 0xff);
+    data[i * YMF825_EQUALIZER_BAND_COUNT + 0] = (uint8_t)(registerFormat >> 16);
+    data[i * YMF825_EQUALIZER_BAND_COUNT + 1] = (uint8_t)((registerFormat >> 8) & 0xff);
+    data[i * YMF825_EQUALIZER_BAND_COUNT + 2] = (uint8_t)(registerFormat & 0xff);
   }
 
-  device->burstwrite(0x20 + band, data, 15);
+  device->burstwrite(0x20 + band, data, sizeof(data));
 }
 
 uint32_t YMF825Driver::getEqualizerCoefficient(uint8_t targetChip, uint8_t band, uint8_t coefficientNumber) {
-  uint8_t baseAddress = 0x23 + band * 15 + coefficientNumber * 3;
-  uint8_t byte0       = device->read(targetChip, baseAddress + 0);
-  uint8_t byte1       = device->read(targetChip, baseAddress + 1);
-  uint8_t byte2       = device->read(targetChip, baseAddress + 2);
+  uint8_t baseAddress = 0x23 + band * YMF825_EQUALIZER_BAND_SIZE * YMF825_EQUALIZER_BAND_COUNT +
+                        coefficientNumber * YMF825_EQUALIZER_BAND_COUNT;
+  uint8_t byte0 = device->read(targetChip, baseAddress + 0);
+  uint8_t byte1 = device->read(targetChip, baseAddress + 1);
+  uint8_t byte2 = device->read(targetChip, baseAddress + 2);
   return (byte0 << 16) + (byte1 << 8) + byte2;
 }
 
 void YMF825Driver::getEqualizer(uint8_t targetChip, uint8_t band, double *coefficients) {
-  for (uint8_t i = 0; i < 5; i++)
+  for (uint8_t i = 0; i < YMF825_EQUALIZER_BAND_SIZE; i++)
     coefficients[i] = YMF825Driver::deserializeCoefficient(getEqualizerCoefficient(targetChip, band, i));
 }
 
@@ -348,7 +349,7 @@ void YMF825Driver::initialize(uint8_t voltage) {
   resetHardware();
   resetSoftware(voltage);
 
-  for (uint8_t i = 0; i < 16; i++) {
+  for (uint8_t i = 0; i < YMF825_VOICE_COUNT; i++) {
     setVoiceNumber(i);
     setVoiceVolume(0x10);
   }
