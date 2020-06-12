@@ -1,6 +1,7 @@
 #include "ymf825/driver.h"
 
 #define opAddress(operatorNumber, offset) (operatorNumber * YMF825_OPERATOR_SIZE + 2 + offset)
+#define opAssignment(address, mask, value) (memory[address] = (memory[address] & mask) | (value))
 
 ToneParameter::ToneParameter() {}
 
@@ -25,7 +26,7 @@ uint8_t ToneParameter::getLfoFrequency() {
 }
 
 void ToneParameter::setLfoFrequency(uint8_t value) {
-  memory[1] = (memory[1] & 0b00000111) | (value << 6);
+  opAssignment(1, 0b00000111, value << 6);
 }
 
 uint8_t ToneParameter::getAlgorithm() {
@@ -33,7 +34,7 @@ uint8_t ToneParameter::getAlgorithm() {
 }
 
 void ToneParameter::setAlgorithm(uint8_t value) {
-  memory[1] = (memory[1] & 0b11000000) | (value & 0b00000111);
+  opAssignment(1, 0b11000000, value & 0b00000111);
 }
 
 uint8_t ToneParameter::getSustainRate(uint8_t operatorNumber) {
@@ -41,7 +42,7 @@ uint8_t ToneParameter::getSustainRate(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setSustainRate(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 0)] = (memory[opAddress(operatorNumber, 0)] & 0b00001001) | (value << 4);
+  opAssignment(opAddress(operatorNumber, 0), 0b00001001, value << 4);
 }
 
 bool ToneParameter::getIgnoreKeyOff(uint8_t operatorNumber) {
@@ -49,7 +50,7 @@ bool ToneParameter::getIgnoreKeyOff(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setIgnoreKeyOff(uint8_t operatorNumber, bool value) {
-  memory[opAddress(operatorNumber, 0)] = (memory[opAddress(operatorNumber, 0)] & 0b11110001) | (value ? 0b00001000 : 0);
+  opAssignment(opAddress(operatorNumber, 0), 0b11110001, value ? 0b00001000 : 0);
 }
 
 bool ToneParameter::getEnableKeyScaleSensitivity(uint8_t operatorNumber) {
@@ -57,7 +58,7 @@ bool ToneParameter::getEnableKeyScaleSensitivity(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setEnableKeyScaleSensitivity(uint8_t operatorNumber, bool value) {
-  memory[opAddress(operatorNumber, 0)] = (memory[opAddress(operatorNumber, 0)] & 0b11111000) | (value ? 0b00000001 : 0);
+  opAssignment(opAddress(operatorNumber, 0), 0b11111000, value ? 0b00000001 : 0);
 }
 
 uint8_t ToneParameter::getReleaseRate(uint8_t operatorNumber) {
@@ -65,7 +66,7 @@ uint8_t ToneParameter::getReleaseRate(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setReleaseRate(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 1)] = (memory[opAddress(operatorNumber, 1)] & 0b00001111) | (value << 4);
+  opAssignment(opAddress(operatorNumber, 1), 0b00001111, value << 4);
 }
 
 uint8_t ToneParameter::getDecayRate(uint8_t operatorNumber) {
@@ -73,7 +74,7 @@ uint8_t ToneParameter::getDecayRate(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setDecayRate(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 1)] = (memory[opAddress(operatorNumber, 1)] & 0b11110000) | (value & 0b00001111);
+  opAssignment(opAddress(operatorNumber, 1), 0b11110000, value & 0b00001111);
 }
 
 uint8_t ToneParameter::getAttackRate(uint8_t operatorNumber) {
@@ -81,7 +82,7 @@ uint8_t ToneParameter::getAttackRate(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setAttackRate(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 2)] = (memory[opAddress(operatorNumber, 2)] & 0b00001111) | (value << 4);
+  opAssignment(opAddress(operatorNumber, 2), 0b00001111, value << 4);
 }
 
 uint8_t ToneParameter::getSustainLevel(uint8_t operatorNumber) {
@@ -89,7 +90,7 @@ uint8_t ToneParameter::getSustainLevel(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setSustainLevel(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 2)] = (memory[opAddress(operatorNumber, 2)] & 0b11110000) | (value & 0b00001111);
+  opAssignment(opAddress(operatorNumber, 2), 0b11110000, value & 0b00001111);
 }
 
 uint8_t ToneParameter::getTotalLevel(uint8_t operatorNumber) {
@@ -97,7 +98,7 @@ uint8_t ToneParameter::getTotalLevel(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setTotalLevel(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 3)] = (memory[opAddress(operatorNumber, 3)] & 0b00000011) | (value << 2);
+  opAssignment(opAddress(operatorNumber, 3), 0b00000011, value << 2);
 }
 
 uint8_t ToneParameter::getKeyScalingLevel(uint8_t operatorNumber) {
@@ -105,7 +106,7 @@ uint8_t ToneParameter::getKeyScalingLevel(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setKeyScalingLevel(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 3)] = (memory[opAddress(operatorNumber, 3)] & 0b11111100) | (value & 0b00000011);
+  opAssignment(opAddress(operatorNumber, 3), 0b11111100, value & 0b00000011);
 }
 
 uint8_t ToneParameter::getAmplitudeModurationDepth(uint8_t operatorNumber) {
@@ -113,8 +114,7 @@ uint8_t ToneParameter::getAmplitudeModurationDepth(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setAmplitudeModurationDepth(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 4)] =
-      (memory[opAddress(operatorNumber, 4)] & 0b00010111) | ((value & 0b00000011) << 5);
+  opAssignment(opAddress(operatorNumber, 4), 0b00010111, (value & 0b00000011) << 5);
 }
 
 bool ToneParameter::getEnableAmplitudeModuration(uint8_t operatorNumber) {
@@ -122,7 +122,7 @@ bool ToneParameter::getEnableAmplitudeModuration(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setEnableAmplitudeModuration(uint8_t operatorNumber, bool value) {
-  memory[opAddress(operatorNumber, 4)] = (memory[opAddress(operatorNumber, 4)] & 0b01100111) | (value ? 0b00010000 : 0);
+  opAssignment(opAddress(operatorNumber, 4), 0b01100111, value ? 0b00010000 : 0);
 }
 
 uint8_t ToneParameter::getVibrationDepth(uint8_t operatorNumber) {
@@ -130,8 +130,7 @@ uint8_t ToneParameter::getVibrationDepth(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setVibrationDepth(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 4)] =
-      (memory[opAddress(operatorNumber, 4)] & 0b01110001) | ((value & 0b00000011) << 1);
+  opAssignment(opAddress(operatorNumber, 4), 0b01110001, (value & 0b00000011) << 1);
 }
 
 bool ToneParameter::getEnableVibration(uint8_t operatorNumber) {
@@ -139,7 +138,7 @@ bool ToneParameter::getEnableVibration(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setEnableVibration(uint8_t operatorNumber, bool value) {
-  memory[opAddress(operatorNumber, 4)] = (memory[opAddress(operatorNumber, 4)] & 0b01110110) | (value ? 0b00000001 : 0);
+  opAssignment(opAddress(operatorNumber, 4), 0b01110110, value ? 0b00000001 : 0);
 }
 
 uint8_t ToneParameter::getMagnificationOfFrequency(uint8_t operatorNumber) {
@@ -147,7 +146,7 @@ uint8_t ToneParameter::getMagnificationOfFrequency(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setMagnificationOfFrequency(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 5)] = (memory[opAddress(operatorNumber, 5)] & 0b00000111) | (value << 4);
+  opAssignment(opAddress(operatorNumber, 5), 0b00000111, value << 4);
 }
 
 uint8_t ToneParameter::getDetune(uint8_t operatorNumber) {
@@ -155,7 +154,7 @@ uint8_t ToneParameter::getDetune(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setDetune(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 5)] = (memory[opAddress(operatorNumber, 5)] & 0b11110000) | (value & 0b00000111);
+  opAssignment(opAddress(operatorNumber, 5), 0b11110000, value & 0b00000111);
 }
 
 uint8_t ToneParameter::getWaveShape(uint8_t operatorNumber) {
@@ -163,7 +162,7 @@ uint8_t ToneParameter::getWaveShape(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setWaveShape(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 6)] = (memory[opAddress(operatorNumber, 6)] & 0b00000111) | (value << 3);
+  opAssignment(opAddress(operatorNumber, 6), 0b00000111, value << 3);
 }
 
 uint8_t ToneParameter::getFeedbackLevel(uint8_t operatorNumber) {
@@ -171,7 +170,7 @@ uint8_t ToneParameter::getFeedbackLevel(uint8_t operatorNumber) {
 }
 
 void ToneParameter::setFeedbackLevel(uint8_t operatorNumber, uint8_t value) {
-  memory[opAddress(operatorNumber, 6)] = (memory[opAddress(operatorNumber, 6)] & 0b11111000) | (value & 0b00000111);
+  opAssignment(opAddress(operatorNumber, 6), 0b11111000, value & 0b00000111);
 }
 
 void ToneParameters::setParameter(uint8_t toneNumber, ToneParameter *parameter) {
